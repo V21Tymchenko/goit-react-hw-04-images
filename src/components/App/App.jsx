@@ -103,7 +103,9 @@ export class App extends Component {
             largeImageURL={largeImageURL}
             imgTags={imgTags}
             onClose={this.closeModal}
-          />
+          >
+            <img src={largeImageURL} alt={imgTags} />
+          </Modal>
         )}
         <Toaster />
       </div>

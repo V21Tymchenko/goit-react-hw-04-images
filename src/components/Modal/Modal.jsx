@@ -29,10 +29,7 @@ class Modal extends Component {
   render() {
     return createPortal(
       <div className={css.Backdrop} onClick={this.handleBackdropClick}>
-        <div className={css.Modal}>
-          {' '}
-          <img src={this.props.largeImageURL} alt={this.props.imgTag} />
-        </div>
+        <div className={css.Modal}>{this.props.children}</div>
       </div>,
       modalRoot
     );
