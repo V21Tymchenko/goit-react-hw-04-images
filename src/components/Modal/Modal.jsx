@@ -39,6 +39,5 @@ export default Modal;
 
 Modal.propTypes = {
   onClose: PropTypes.func,
-  largeImageURL: PropTypes.string.isRequired,
-  imgTag: PropTypes.string,
+  children: PropTypes.node,
 };
