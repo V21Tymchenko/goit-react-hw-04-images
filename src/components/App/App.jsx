@@ -66,7 +66,7 @@ export class App extends Component {
     const { imageName, loading, images, error, largeImageURL, imgTags } =
       this.state;
     return (
-      <div style={{ width: 1200, height: 1000, padding: 20 }}>
+      <div className={s.App}>
         <Searchbar onSubmit={this.handleFormSubmit} />
         {error && toast.error('sorry, try again')}
         {loading && (
