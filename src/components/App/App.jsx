@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import Searchbar from '../Searchbar';
 import fetchImages from '../../helpers/ImageFromApi';
 import ImageGallery from '../ImageGallery/ImageGallery';
@@ -7,109 +7,100 @@ import s from './App.module.css';
 import { Audio } from 'react-loader-spinner';
 import toast, { Toaster } from 'react-hot-toast';
 
-export class App extends Component {
-  state = {
-    imageName: '',
-    images: [],
-    status: 'idle',
-    error: null,
-    largeImageURL: '',
-    imgTags: '',
-    page: 1,
-  };
+export function App() {
+  const [imageName, setImageName] = useState(null);
+  const [images, setImages] = useState([]);
+  const [largeImageURL, setLargeImageURL] = useState('');
+  const [imgTags, setImgTags] = useState('');
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
 
-  async componentDidUpdate(_, prevState) {
-    const { imageName, page } = this.state;
-    if (prevState.imageName !== imageName || prevState.page !== page) {
+  useEffect(() => {
+    getApi(imageName, page);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [imageName]);
+
+  useEffect(() => {
+    getApi(imageName, page);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [imageName, page]);
+
+  function getApi(findImage, numberPage) {
+    if (!findImage) return;
+
+    async function imageApi() {
       try {
-        this.setState({ loading: true, status: 'pending' });
+        setLoading(true);
+        const getImages = await fetchImages(findImage, numberPage);
 
-        await fetchImages(imageName, page).then(images => {
-          if (images.length === 0) {
-            this.setState(prevState => (prevState.images = []));
-
-            toast.error(`no picture with name ${imageName}`, {
-              icon: '🥺',
-            });
-            return;
-          }
-          this.setState({
-            images: [...this.state.images, ...images],
-            status: 'resolved',
+        if (findImage.trim() === '' || getImages.length === 0) {
+          return toast.error(`no picture with name ${findImage}`, {
+            icon: '🥺',
           });
-        });
+        }
+        setImages([...images, ...getImages]);
       } catch (error) {
-        this.setState({ status: 'rejected' });
-        toast.error('we can not find');
+        return toast.error('we can not find');
       } finally {
-        this.setState({ loading: false });
+        setLoading(false);
       }
     }
-    if (prevState.page !== page) {
-    }
+    imageApi();
   }
 
-  handleLoadMore = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
-  };
-  handleFormSubmit = imageName => {
-    this.setState({ imageName, page: 1, images: [] });
-  };
-
-  handleSelectedImage = (largeImageURL, imgTags) => {
-    this.setState({ largeImageURL, imgTags });
-  };
-  closeModal = () => {
-    this.setState({ largeImageURL: '' });
+  const handleFormSubmit = imageName => {
+    setImageName(imageName);
+    setPage(1);
+    setImages([]);
   };
 
-  render() {
-    const { imageName, loading, images, error, largeImageURL, imgTags } =
-      this.state;
-    return (
-      <div className={s.App}>
-        <Searchbar onSubmit={this.handleFormSubmit} />
-        {error && toast.error('sorry, try again')}
-        {loading && (
-          <div className={s.loading}>
-            <Audio
-              height="80"
-              width="80"
-              radius="9"
-              color="orange"
-              ariaLabel="loading"
-              wrapperStyle
-            />
-          </div>
-        )}
+  const handleSelectedImage = (largeImageURL, imgTags) => {
+    setLargeImageURL(largeImageURL);
+    setImgTags(imgTags);
+  };
 
-        {!imageName && <p className={s.looking}>What are you looking for? </p>}
-        {images.length > 0 && (
-          <>
-            <ImageGallery
-              images={images}
-              handleSelectedImage={this.handleSelectedImage}
-            />
-            <button
-              className={s.buttonMain}
-              type="button"
-              onClick={this.handleLoadMore}
-            >
-              Learn more
-            </button>
-          </>
-        )}
-        {largeImageURL && (
-          <Modal
-            largeImageURL={largeImageURL}
-            imgTags={imgTags}
-            onClose={this.closeModal}
+  return (
+    <div className={s.App}>
+      <Searchbar onSubmit={handleFormSubmit} />
+      {loading && (
+        <div className={s.loading}>
+          <Audio
+            height="80"
+            width="80"
+            radius="9"
+            color="orange"
+            ariaLabel="loading"
+            wrapperStyle
+          />
+        </div>
+      )}
+
+      {!imageName && <p className={s.looking}>What are you looking for? </p>}
+      {images.length > 0 && (
+        <>
+          <ImageGallery
+            images={images}
+            handleSelectedImage={handleSelectedImage}
+          />
+          <button
+            className={s.buttonMain}
+            type="button"
+            onClick={() => setPage(page => page + 1)}
           >
-            <img src={largeImageURL} alt={imgTags} />
-          </Modal>
-        )}
-        <Toaster />
-      </div>
-    );
-  }
+            Learn more
+          </button>
+        </>
+      )}
+      {largeImageURL && (
+        <Modal
+          largeImageURL={largeImageURL}
+          imgTags={imgTags}
+          onClose={() => setLargeImageURL('')}
+        >
+          <img src={largeImageURL} alt={imgTags} />
+        </Modal>
+      )}
+      <Toaster />
+    </div>
+  );
 }
