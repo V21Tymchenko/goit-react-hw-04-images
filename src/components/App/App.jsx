@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import Searchbar from '../Searchbar';
-import fetchImages from 'helpers/ImageFromApi.jsx';
+import fetchImages from '../../helpers/ImageFromApi.jsx';
 import ImageGallery from '../ImageGallery/ImageGallery';
 import Modal from '../Modal/Modal';
 import s from './App.module.css';
